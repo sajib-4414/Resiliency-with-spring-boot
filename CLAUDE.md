@@ -17,11 +17,11 @@ Learning lab: `order-service` (8081) calls `inventory-service` (8082). See `PLAN
 | 200 OK | Successful read/update with a body | `GET /orders/{id}` |
 | 201 Created | A resource was created | `POST /orders` |
 | 204 No Content | Success, nothing to return | future deletes |
-| 400 Bad Request | Malformed or invalid payload (syntax, validation) | `qty` < 1, blank `sku` |
+| 400 Bad Request | Request is malformed: unparseable, wrong type, or a required field missing/null | invalid JSON, `"qty": "abc"`, no `sku` |
 | 401 / 403 | Not authenticated / not allowed | future |
 | 404 Not Found | The resource does not exist | unknown sku, unknown order id |
 | 409 Conflict | Request conflicts with current state, e.g. duplicate or version clash | duplicate idempotency key (later) |
-| 422 Unprocessable Entity | Valid request that breaks a business rule | not enough stock |
+| 422 Unprocessable Entity | Well-formed and present, but the value breaks a rule (validation or business) | `qty` < 1, blank `sku`, not enough stock |
 | 429 Too Many Requests | Rate limited; include `Retry-After` | inventory rate limiter |
 | 500 Internal Server Error | Our own unexpected bug | uncaught exception |
 | 502 Bad Gateway | Dependency returned an invalid response | malformed reply from inventory |

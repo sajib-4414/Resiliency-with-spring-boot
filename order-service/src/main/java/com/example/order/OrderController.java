@@ -4,6 +4,7 @@ import com.example.order.InventoryExceptions.OutOfStockException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +43,6 @@ public class OrderController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
     }
 
-    public record CreateOrderRequest(@NotBlank String sku, @Min(1) int qty) {
+    public record CreateOrderRequest(@NotBlank String sku, @NotNull @Min(1) Integer qty) {
     }
 }

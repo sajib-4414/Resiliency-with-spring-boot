@@ -6,11 +6,16 @@ import com.example.order.InventoryExceptions.OutOfStockException;
 import com.example.order.InventoryExceptions.UnknownSkuException;
 import feign.RetryableException;
 import java.net.SocketTimeoutException;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -22,6 +27,23 @@ public class ApiExceptionHandler {
     @ExceptionHandler(UnknownSkuException.class)
     ResponseEntity<Map<String, String>> unknownSku(UnknownSkuException e) {
         return body(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    /** A missing/null field is a malformed request (400); a present value that breaks a rule is 422. */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    ResponseEntity<Map<String, String>> invalidFields(MethodArgumentNotValidException e) {
+        List<FieldError> errors = e.getBindingResult().getFieldErrors();
+        boolean missing = errors.stream().anyMatch(f -> f.getRejectedValue() == null);
+        String message = errors.stream()
+                .map(f -> f.getField() + " " + f.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+        return body(missing ? HttpStatus.BAD_REQUEST : HttpStatus.UNPROCESSABLE_ENTITY, message);
+    }
+
+    /** Body that cannot be parsed at all (bad JSON, wrong type, missing body): 400. */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<Map<String, String>> unreadable(HttpMessageNotReadableException e) {
+        return body(HttpStatus.BAD_REQUEST, "Malformed request body");
     }
 
     @ExceptionHandler(OutOfStockException.class)
