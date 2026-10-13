@@ -15,7 +15,7 @@ Both services expose metrics at `/actuator/prometheus` (Micrometer). Prometheus 
    - `monitoring\windows\grafana-datasource.yml` -> `C:\tools\grafana\conf\provisioning\datasources\`
    - `monitoring\windows\grafana-dashboards.yml` -> `C:\tools\grafana\conf\provisioning\dashboards\`
    ```
-   C:\tools\grafana\bin\grafana-server.exe --homepath C:\tools\grafana
+   C:\tools\grafana\bin\grafana.exe server --homepath C:\tools\grafana
    ```
 5. Open http://localhost:3000 (user `admin`, password `admin`, skip the change). Dashboard: **Resilience lab**.
 
