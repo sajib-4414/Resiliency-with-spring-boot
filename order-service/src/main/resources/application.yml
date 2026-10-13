@@ -49,7 +49,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,circuitbreakers,retries,ratelimiters,bulkheads,metrics
+        include: health,info,circuitbreakers,retries,retryevents,ratelimiters,bulkheads,metrics
   health:
     circuitbreakers:
       enabled: true
