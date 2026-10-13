@@ -1,0 +1,25 @@
+# Prometheus (scrapes the services) + Grafana (charts). Services run on the host, not in Docker.
+# Start: docker compose up -d   |   Stop: docker compose down
+# Prometheus: http://localhost:9090   Grafana: http://localhost:3000 (admin / admin)
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    mem_limit: 300m
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./grafana/resilience.json:/var/lib/grafana/dashboards/resilience.json:ro
+    mem_limit: 300m
+    depends_on:
+      - prometheus
