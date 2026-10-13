@@ -27,6 +27,25 @@ inventory:
   url: http://localhost:8082
 
 resilience4j:
+  circuitbreaker:
+    instances:
+      inventory:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10                 # judge the last 10 calls (each retry attempt counts)
+        minimumNumberOfCalls: 5               # no verdict before 5 calls are recorded
+        failureRateThreshold: 50              # open at >= 50% failures
+        slowCallDurationThreshold: 1500ms     # below the 2s read timeout, so slow-but-ok calls count
+        slowCallRateThreshold: 50             # open at >= 50% slow calls
+        waitDurationInOpenState: 10s
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        permittedNumberOfCallsInHalfOpenState: 3
+        registerHealthIndicator: true
+        recordExceptions:                     # same transient failures retry handles
+          - com.example.order.InventoryExceptions$InventoryUnavailableException
+          - feign.RetryableException
+        ignoreExceptions:                     # real answers: neither success nor failure
+          - com.example.order.InventoryExceptions$UnknownSkuException
+          - com.example.order.InventoryExceptions$InventoryRateLimitedException
   retry:
     instances:
       inventory:

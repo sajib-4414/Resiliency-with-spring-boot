@@ -5,6 +5,7 @@ import com.example.order.InventoryExceptions.InventoryUnavailableException;
 import com.example.order.InventoryExceptions.OutOfStockException;
 import com.example.order.InventoryExceptions.UnknownSkuException;
 import feign.RetryableException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,13 @@ public class ApiExceptionHandler {
         if (e.getCause() instanceof SocketTimeoutException) {
             return body(HttpStatus.GATEWAY_TIMEOUT, "Inventory did not respond in time");
         }
+        return body(HttpStatus.SERVICE_UNAVAILABLE, "Inventory unavailable, try later");
+    }
+
+    /** Circuit is open: fail fast without calling inventory. */
+    @ExceptionHandler(CallNotPermittedException.class)
+    ResponseEntity<Map<String, String>> circuitOpen(CallNotPermittedException e) {
+        log.warn("Inventory call rejected: {}", e.getMessage());
         return body(HttpStatus.SERVICE_UNAVAILABLE, "Inventory unavailable, try later");
     }
 

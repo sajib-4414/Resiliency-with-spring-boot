@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.example.order.InventoryExceptions.InventoryUnavailableException;
 import com.example.order.InventoryExceptions.UnknownSkuException;
 import com.sun.net.httpserver.HttpServer;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -44,8 +45,12 @@ class InventoryRetryTest {
         inventory.stop(0);
     }
 
+    @Autowired
+    CircuitBreakerRegistry circuitBreakers;
+
     @BeforeEach
     void reset() {
+        circuitBreakers.circuitBreaker("inventory").reset();   // keep failures from one test out of the next
         calls.set(0);
         failFirst = 0;
         errorStatus = 500;
