@@ -29,6 +29,23 @@ Start `inventory-service` first, then run `OrderServiceApplication` from Intelli
 mvn spring-boot:run
 ```
 
+## Tests
+
+From the `order-service` folder:
+
+```
+mvn test
+```
+
+Run a single class or method:
+
+```
+mvn test -Dtest=OrderServiceTest
+mvn test -Dtest=OrderControllerTest#returns422AndSavesNothingWhenOutOfStock
+```
+
+No other service needs to be running; inventory and the database are mocked. In IntelliJ, right-click `src/test/java` and choose **Run 'All Tests'**. (`inventory-service` has no tests yet.)
+
 ## API
 
 | Method | Path | Description |
