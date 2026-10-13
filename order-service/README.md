@@ -48,32 +48,23 @@ No other service needs to be running; inventory and the database are mocked. In 
 
 ## Monitoring (Windows, no Docker)
 
-Both services expose metrics at `/actuator/prometheus`. Prometheus collects them and Grafana draws them (retry outcomes, attempts vs orders, response codes, latency). The config files are in the root `monitoring/` folder:
+Prometheus collects the metrics from `/actuator/prometheus` and Grafana draws them. The files are in the root `monitoring/` folder:
 
 | File | What it is |
 |---|---|
-| `monitoring/windows/prometheus.yml` | Tells Prometheus to scrape `localhost:8081` (order) and `localhost:8082` (inventory) every 5s |
-| `monitoring/grafana/resilience.json` | The ready-made **Resilience lab** dashboard, imported into Grafana |
+| `monitoring/windows/prometheus.yml` | Prometheus config: scrape `localhost:8081` (order) and `localhost:8082` (inventory) every 5s |
+| `monitoring/grafana/resilience.json` | The **Resilience lab** dashboard (retry outcomes, attempts vs orders, response codes, latency) |
 
-Steps:
-
-1. Download the Windows zips of Prometheus (prometheus.io/download) and Grafana OSS (grafana.com/grafana/download) and unzip them, e.g. to `C:\tools\prometheus` and `C:\tools\grafana`.
-2. Start inventory-service, then order-service. Check `http://localhost:8081/actuator/prometheus` shows text metrics.
-3. Start Prometheus with the project's config (own terminal; without `--config.file` it only scrapes itself):
+1. Run Prometheus with the config:
    ```
-   C:\tools\prometheus\prometheus.exe --config.file="<project>\monitoring\windows\prometheus.yml"
+   prometheus.exe --config.file="<project>\monitoring\windows\prometheus.yml"
    ```
-   Check `http://localhost:9090/targets`: `order-service` and `inventory-service` must be **UP**.
-4. Start Grafana (own terminal):
+2. Run Grafana:
    ```
-   C:\tools\grafana\bin\grafana.exe server --homepath C:\tools\grafana
+   grafana.exe server
    ```
-5. Open `http://localhost:3000`, log in with `admin` / `admin` (skip the password change).
-6. Add the data source: **Connections > Data sources > Add data source > Prometheus**, URL `http://localhost:9090`, **Save & test**.
-7. Load the dashboard: **Dashboards > New > Import > Upload JSON file**, choose `monitoring/grafana/resilience.json`, pick the Prometheus data source, **Import**. If a panel says "datasource not found", open it and select your Prometheus data source.
-8. Turn on chaos (`POST http://localhost:8082/chaos` with `{"failureRate": 0.5}`), send some orders, and set the time range to **Last 5 minutes**.
-
-Stop either tool with Ctrl+C in its terminal. More detail: `monitoring/README.md`.
+3. In Grafana (`http://localhost:3000`), add a Prometheus data source with URL `http://localhost:9090`.
+4. Import `monitoring/grafana/resilience.json` as a dashboard (**Dashboards > New > Import**).
 
 ## API
 
