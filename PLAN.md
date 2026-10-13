@@ -57,10 +57,13 @@ Resilience4j `@Retry`: `maxAttempts=4`, `waitDuration=500ms`, `enableExponential
 - Lesson: retry storms, why jitter, why only idempotent calls (this GET is safe to retry).
 
 ### Step 1.5: Circuit breaker
-`@CircuitBreaker`: sliding window 10 calls, `failureRateThreshold=50`, `waitDurationInOpenState=10s`, `permittedNumberOfCallsInHalfOpenState=3`, `slowCallDurationThreshold`. Fallback: respond 503 "inventory unavailable, try later" (alternative to explore: accept the order as `PENDING_STOCK_CHECK`).
-- Expose state via `/actuator/circuitbreakers` and `/actuator/health`.
-- Experiment: `down=true` -> circuit opens, calls fail fast; clear chaos -> half-open -> closed.
-- Combine with retry and observe how aspect order affects counting of failures.
+`@CircuitBreaker`: count-based sliding window of 10 calls, `minimumNumberOfCalls=5`, `failureRateThreshold=50`, `slowCallDurationThreshold=1500ms` (`slowCallRateThreshold=50`), `waitDurationInOpenState=10s` with automatic transition to half-open, `permittedNumberOfCallsInHalfOpenState=3`. Fallback: respond 503 "inventory unavailable, try later" via `CallNotPermittedException` in `ApiExceptionHandler` (alternative to explore: accept the order as `PENDING_STOCK_CHECK`).
+- **Done.** Recorded as failures: 5xx and Feign I/O errors (same set retry handles). Ignored (neither success nor failure): 404 unknown sku and 429, since inventory gave a real answer.
+- Aspect order: Retry wraps CircuitBreaker, so every retry attempt is counted by the breaker (one order against a dead inventory records 4 failures) and an open circuit is not retried.
+- State exposed via `/actuator/circuitbreakers` and `/actuator/health`.
+- Experiment E4 (see `docs/experiments.md`): `down=true` -> circuit opens after the first order, later calls fail in ~10-30ms instead of ~3.5s; clear chaos -> half-open -> closed after 3 good trial calls.
+- Tests: `InventoryCircuitBreakerTest` (opens and fails fast; 404s do not open it). Tests share a Spring context, so reset the breaker in `@BeforeEach`.
+- Not yet explored: a failed half-open trial reopening the circuit; slow-call opening (latency chaos between 1.5s and 2s).
 
 ### Step 1.6: Rate limiting
 Two directions, both with Resilience4j `RateLimiter`:
