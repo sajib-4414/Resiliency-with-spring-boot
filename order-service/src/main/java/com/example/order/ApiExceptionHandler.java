@@ -29,6 +29,11 @@ public class ApiExceptionHandler {
         return body(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
+    @ExceptionHandler(OrderNotFoundException.class)
+    ResponseEntity<Map<String, String>> orderNotFound(OrderNotFoundException e) {
+        return body(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
     /** A missing/null field is a malformed request (400); a present value that breaks a rule is 422. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<Map<String, String>> invalidFields(MethodArgumentNotValidException e) {
