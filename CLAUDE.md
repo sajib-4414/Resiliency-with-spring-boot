@@ -37,7 +37,7 @@ Rules:
 ## Code conventions
 - Package per service: `com.example.order`, `com.example.inventory`. Match the surrounding style; keep it small and readable.
 - Layering: Controller -> Service -> Repository/Client. Controllers only handle HTTP (binding, validation, status codes) and delegate to a `@Service` class (`OrderService`, `InventoryService`); no business logic, repository or client calls in controllers. Services hold business rules, take plain values (not web DTOs) and throw domain exceptions that `ApiExceptionHandler` maps to status codes (not `ResponseStatusException`). Every new feature gets a service method plus a plain Mockito unit test for it.
-- Resilience4j annotations live on `InventoryGateway` (added in Step 1.4; no gateway before then), not the controller. Config goes in `application.yml`.
+- Resilience4j annotations live on the Feign client methods in `InventoryClient` (no gateway class), not the controller or service. Config goes in `application.yml`.
 - Chaos switches (`/chaos`) are lab-only scaffolding; they must stay off by default.
 - Each experiment gets a note in `docs/experiments.md`: setup, prediction, result.
 

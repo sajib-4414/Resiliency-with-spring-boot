@@ -26,6 +26,21 @@ spring:
 inventory:
   url: http://localhost:8082
 
+resilience4j:
+  retry:
+    instances:
+      inventory:
+        maxAttempts: 4                    # 1 call + 3 retries
+        waitDuration: 500ms               # gaps: 0.5s, 1s, 2s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:                  # transient: 5xx, connection refused, timeouts
+          - com.example.order.InventoryExceptions$InventoryUnavailableException
+          - feign.RetryableException
+        ignoreExceptions:                 # real answers: never retry
+          - com.example.order.InventoryExceptions$UnknownSkuException
+          - com.example.order.InventoryExceptions$InventoryRateLimitedException
+
 logging:
   level:
     com.example.order.InventoryClient: DEBUG
