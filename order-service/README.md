@@ -62,7 +62,17 @@ POST /orders
 { "sku": "book", "qty": 2 }
 ```
 
-Seeded stock in inventory-service: `book` 10, `pen` 0, `laptop` 3.
+## Seed data
+
+Orders are checked against the stock that `inventory-service` seeds on startup (from its `data.sql`; see `inventory-service/README.md`):
+
+| sku | available | Order of qty 1 |
+|---|---|---|
+| `book` | 10 | 201 (up to qty 10) |
+| `pen` | 0 | 422 out of stock |
+| `laptop` | 3 | 201 (up to qty 3) |
+
+Any other sku gives 404. Order-service's own database starts empty. Stock is not reduced when an order is created.
 
 ## Status codes
 
