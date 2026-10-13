@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: lab
+    type: file
+    options:
+      # Folder that contains resilience.json (Grafana loads every .json file in it)
+      path: E:\Development practice\Claude Code\microserviceprojecttest\monitoring\grafana

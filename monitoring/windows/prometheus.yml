@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 5s    # short on purpose, so chaos experiments show up quickly
+
+scrape_configs:
+  - job_name: order-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["localhost:8081"]
+
+  - job_name: inventory-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["localhost:8082"]

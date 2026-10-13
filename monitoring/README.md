@@ -2,20 +2,28 @@
 
 Both services expose metrics at `/actuator/prometheus` (Micrometer). Prometheus scrapes them every 5s; Grafana charts them.
 
-## Start
+## Run on Windows (no Docker)
 
-1. Start Docker Desktop and wait until it says it is running.
-2. Start inventory-service, then order-service (they run on the host, not in Docker).
-3. From this folder:
+1. Download the Windows zips: Prometheus (prometheus.io/download, `windows-amd64`) and Grafana OSS (grafana.com/grafana/download, Windows standalone zip). Unzip each somewhere, for example `C:\tools\prometheus` and `C:\tools\grafana`.
+2. Start inventory-service, then order-service. Check `http://localhost:8081/actuator/prometheus` shows text metrics.
+3. **Prometheus**, in its own terminal:
+   ```
+   C:\tools\prometheus\prometheus.exe --config.file="E:\Development practice\Claude Code\microserviceprojecttest\monitoring\windows\prometheus.yml"
+   ```
+   Check http://localhost:9090/targets: both targets **UP**.
+4. **Grafana data source and dashboard**: copy two files into Grafana's provisioning folders (create the folders if missing), then start it:
+   - `monitoring\windows\grafana-datasource.yml` -> `C:\tools\grafana\conf\provisioning\datasources\`
+   - `monitoring\windows\grafana-dashboards.yml` -> `C:\tools\grafana\conf\provisioning\dashboards\`
+   ```
+   C:\tools\grafana\bin\grafana-server.exe --homepath C:\tools\grafana
+   ```
+5. Open http://localhost:3000 (user `admin`, password `admin`, skip the change). Dashboard: **Resilience lab**.
 
-```
-docker compose up -d
-```
+Stop each one with Ctrl+C in its terminal.
 
-4. Check targets are UP: http://localhost:9090/targets
-5. Open Grafana: http://localhost:3000 (user `admin`, password `admin`, skip the password change). Dashboard: **Resilience lab**.
+## Run with Docker (alternative)
 
-Stop with `docker compose down`.
+Start Docker Desktop, then `docker compose up -d` in this folder. Uses the files in this folder and `grafana\`, not `windows\`.
 
 ## Dashboard panels
 
