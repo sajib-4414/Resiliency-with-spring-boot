@@ -36,7 +36,7 @@ Rules:
 
 ## Code conventions
 - Package per service: `com.example.order`, `com.example.inventory`. Match the surrounding style; keep it small and readable.
-- Resilience4j annotations live on `InventoryGateway`, not the controller. Config goes in `application.yml`.
+- Resilience4j annotations live on `InventoryGateway` (added in Step 1.4; no gateway before then), not the controller. Config goes in `application.yml`.
 - Chaos switches (`/chaos`) are lab-only scaffolding; they must stay off by default.
 - Each experiment gets a note in `docs/experiments.md`: setup, prediction, result.
 

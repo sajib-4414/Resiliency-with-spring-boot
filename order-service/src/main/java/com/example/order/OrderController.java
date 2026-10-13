@@ -17,10 +17,10 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 public class OrderController {
 
-    private final InventoryGateway inventory;
+    private final InventoryClient inventory;
     private final OrderRepository orders;
 
-    public OrderController(InventoryGateway inventory, OrderRepository orders) {
+    public OrderController(InventoryClient inventory, OrderRepository orders) {
         this.inventory = inventory;
         this.orders = orders;
     }

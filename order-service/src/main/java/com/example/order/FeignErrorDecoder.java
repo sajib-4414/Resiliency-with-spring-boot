@@ -5,9 +5,8 @@ import com.example.order.InventoryExceptions.InventoryUnavailableException;
 import com.example.order.InventoryExceptions.UnknownSkuException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import org.springframework.stereotype.Component;
 
-@Component
+/** Registered for {@link InventoryClient} only, via {@link InventoryClientConfig}. */
 public class FeignErrorDecoder implements ErrorDecoder {
 
     private final ErrorDecoder fallback = new Default();

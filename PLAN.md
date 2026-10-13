@@ -13,7 +13,7 @@ client -> order-service --(REST: GET /inventory/{sku})--> inventory-service
 
 Stack: Java 21, Spring Boot 3.x, Maven (two independent projects under one folder), Spring Web, Spring Data JPA + H2, Spring Boot Actuator, **Spring Cloud OpenFeign** (`spring-cloud-starter-openfeign`, with the Spring Cloud BOM version matching the Boot version) for the HTTP call, Resilience4j (`resilience4j-spring-boot3`) for resilience.
 
-Feign + Resilience4j design: a declarative `@FeignClient` interface `InventoryClient`, wrapped by a thin `InventoryGateway` bean that carries the Resilience4j annotations (`@Retry`, `@CircuitBreaker`, `@RateLimiter`, `@Bulkhead`) and the fallbacks. This keeps each pattern explicit and easy to toggle per experiment. Gotchas to handle: Spring Cloud's Feign Retryer is disabled by default (keep it that way so retries are only counted by Resilience4j), and a custom `ErrorDecoder` maps 404/409/429/5xx to distinct exceptions so only retryable errors are retried.
+Feign + Resilience4j design: a declarative `@FeignClient` interface `InventoryClient`, wrapped by a thin `InventoryGateway` bean (introduced in Step 1.4, when the first annotation arrives; until then `OrderController` calls `InventoryClient` directly) that carries the Resilience4j annotations (`@Retry`, `@CircuitBreaker`, `@RateLimiter`, `@Bulkhead`) and the fallbacks. This keeps each pattern explicit and easy to toggle per experiment. Gotchas to handle: Spring Cloud's Feign Retryer is disabled by default (keep it that way so retries are only counted by Resilience4j), and a custom `ErrorDecoder` maps 404/409/429/5xx to distinct exceptions so only retryable errors are retried.
 
 ## Database
 Database per service: no shared tables; order-service only learns stock via the REST call.
@@ -42,7 +42,7 @@ The caller needs the answer before it can respond, which is why this call is syn
 
 ### Step 1.1: Plain sync call (no resilience)
 - inventory-service: `StockItem` entity (sku, available), seeded via `data.sql`, `InventoryController` with `GET /inventory/{sku}`.
-- order-service: `@EnableFeignClients`, `InventoryClient` (`@FeignClient(name="inventory", url="${inventory.url}")` with `@GetMapping("/inventory/{sku}")`), `InventoryGateway` (wrapper, empty of resilience for now), `OrderController` implementing the flow above, `Order` entity + repo.
+- order-service: `@EnableFeignClients`, `InventoryClient` (`@FeignClient(name="inventory", url="${inventory.url}")` with `@GetMapping("/inventory/{sku}")`), `OrderController` (calls `InventoryClient` directly; no gateway until Step 1.4) implementing the flow above, `Order` entity + repo.
 - Verify the happy, out-of-stock, and unknown-sku paths with curl.
 
 ### Step 1.2: Chaos switches on inventory-service
@@ -85,7 +85,7 @@ Two directions, both with Resilience4j `RateLimiter`:
 
 ### Key files (Phase 1)
 - `inventory-service/`: `InventoryController`, `StockItem` (+repo), `ChaosController`, `ChaosFilter`, `application.yml` (rate limiter)
-- `order-service/`: `OrderController`, `Order` (+repo), `InventoryClient` (Feign), `InventoryGateway` (Resilience4j annotations), `FeignErrorDecoder`, `application.yml` (retry/circuitbreaker/ratelimiter/bulkhead config), Actuator exposure
+- `order-service/`: `OrderController`, `Order` (+repo), `InventoryClient` (Feign), `InventoryGateway` (added in Step 1.4, Resilience4j annotations), `FeignErrorDecoder`, `InventoryClientConfig`, `application.yml` (retry/circuitbreaker/ratelimiter/bulkhead config), Actuator exposure
 - `docs/experiments.md`: setup -> prediction -> result log
 
 ### Verification (Phase 1)
