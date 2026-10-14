@@ -162,17 +162,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "1": {
-                  "text": "active",
-                  "color": "green"
-                }
-              }
-            }
-          ]
+          "mappings": []
         },
         "overrides": [
           {
