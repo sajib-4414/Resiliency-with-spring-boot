@@ -73,6 +73,8 @@ Two directions, both with Resilience4j `RateLimiter`:
 
 ### Step 1.7 (optional): Bulkhead and a non-idempotent call
 - `@Bulkhead` (max concurrent calls) so a slow dependency can't consume all request threads.
+  - **Done (bulkhead part).** Semaphore bulkhead on `InventoryClient`: `maxConcurrentCalls=5`, `maxWaitDuration=0` (reject immediately). Innermost aspect, so each retry attempt takes a permit; `BulkheadFullException` is neither retried nor counted by the breaker, and maps to 503 "Inventory busy, try later".
+  - Test: `InventoryBulkheadTest`. Experiment E5 in `docs/experiments.md`. The thread-pool bulkhead (async, `ThreadPoolBulkhead`) is a possible later comparison on a branch.
 - Add `POST /inventory/{sku}/reserve` and see why blind retry is dangerous (double reservation). This sets up idempotency keys in a later phase.
 
 ### Phase 1 experiment table

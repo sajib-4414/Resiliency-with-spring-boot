@@ -35,3 +35,9 @@ Fire a request: `POST http://localhost:8081/orders  {"sku":"book","qty":1}`
 - Prediction: the first failing order takes ~3.5s (4 attempts) and opens the circuit; the next orders return 503 in a few ms without reaching inventory; after 10s the circuit goes half-open, and 3 good trial calls close it.
 - Result: baseline 201. With `down=true`, order 1 returned 503 in 3.57s and the state became OPEN (1 success + 4 failed attempts = 5 calls, 80% failure, so the minimum of 5 calls was reached at once). Orders 2-4 returned 503 in 11-31ms. The state was already HALF_OPEN by the time chaos was cleared (automatic transition after 10s). The next 3 orders returned 201 and the state became CLOSED; later orders stayed 201.
 - Lessons: retry attempts count toward the window, so retry makes the breaker trip faster; the breaker turns a 3.5s failure into a ~20ms one. Not exercised: a failed half-open trial reopening the circuit.
+
+## E5: Slow inventory, bulkhead (Step 1.7)
+
+- Setup: `latencyMs=1800` (under the 2s read timeout), then 20 parallel `POST /orders` for `book` (bulkhead: 5 concurrent calls, no waiting).
+- Prediction: 5 orders reach inventory and return 201 after ~1.8s; the other 15 return 503 "Inventory busy, try later" within a few ms; no retries for the rejected ones and the circuit stays CLOSED. `/actuator/bulkheads` shows 0 available calls during the burst.
+- Result: _to fill in_

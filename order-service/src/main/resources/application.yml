@@ -60,6 +60,12 @@ resilience4j:
           - com.example.order.InventoryExceptions$UnknownSkuException
           - com.example.order.InventoryExceptions$InventoryRateLimitedException
 
+  bulkhead:
+    instances:
+      inventory:
+        maxConcurrentCalls: 5             # semaphore: at most 5 inventory calls in flight
+        maxWaitDuration: 0                # no queueing: reject immediately when full
+
 logging:
   level:
     com.example.order.InventoryClient: DEBUG

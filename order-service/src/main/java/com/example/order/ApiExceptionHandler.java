@@ -5,6 +5,7 @@ import com.example.order.InventoryExceptions.InventoryUnavailableException;
 import com.example.order.InventoryExceptions.OutOfStockException;
 import com.example.order.InventoryExceptions.UnknownSkuException;
 import feign.RetryableException;
+import io.github.resilience4j.bulkhead.BulkheadFullException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import java.net.SocketTimeoutException;
 import java.util.List;
@@ -78,6 +79,13 @@ public class ApiExceptionHandler {
     ResponseEntity<Map<String, String>> circuitOpen(CallNotPermittedException e) {
         log.warn("Inventory call rejected: {}", e.getMessage());
         return body(HttpStatus.SERVICE_UNAVAILABLE, "Inventory unavailable, try later");
+    }
+
+    /** Too many concurrent calls to inventory already in flight: shed load, may succeed later. */
+    @ExceptionHandler(BulkheadFullException.class)
+    ResponseEntity<Map<String, String>> bulkheadFull(BulkheadFullException e) {
+        log.warn("Inventory call rejected: {}", e.getMessage());
+        return body(HttpStatus.SERVICE_UNAVAILABLE, "Inventory busy, try later");
     }
 
     @ExceptionHandler(InventoryRateLimitedException.class)
